@@ -45,8 +45,8 @@ public:
 
 protected slots:
 
-  void OnSelectModeComboBoxCurrentTextChanged(const QString& text);
-  void OnResetButtonPressed();
+  void OnModeComboBoxCurrentTextChanged(const QString& text);
+  void OnDefaultButtonClicked();
 
 protected:
   void ResetLatticeParameters();

@@ -18,15 +18,15 @@ QmitkRadiomicsStatisticCaPTkHeaderView::QmitkRadiomicsStatisticCaPTkHeaderView(
     // Default values
     // TODO: Limit them
     // TODO: Make them accept only numbers
-    this->ResetLatticeParameters();
-    this->OnSelectModeComboBoxCurrentTextChanged("Normal");
+    // this->ResetLatticeParameters();
+    this->OnModeComboBoxCurrentTextChanged("Normal");
 
     connect(m_Controls->comboBox_mode, SIGNAL(currentTextChanged(const QString&)),
         this, SLOT(OnModeComboBoxCurrentTextChanged(const QString&))
     );
 
-    connect(m_Controls->pushButton_reset, SIGNAL(clicked()),
-        this, SLOT(OnResetButtonClicked())
+    connect(m_Controls->pushButton_default, SIGNAL(clicked()),
+        this, SLOT(OnDefaultButtonClicked())
     );
 }
 
@@ -55,32 +55,34 @@ int QmitkRadiomicsStatisticCaPTkHeaderView::GetLatticeType()
     return m_Controls->lineEdit_type->text().toInt();
 }
 
-void QmitkRadiomicsStatisticCaPTkHeaderView::OnSelectModeComboBoxCurrentTextChanged(
+void QmitkRadiomicsStatisticCaPTkHeaderView::OnModeComboBoxCurrentTextChanged(
     const QString& text)
 {
     if (text == "Normal")
     {
-    //     m_Controls->label_radius->setVisible(false);
-    //     m_Controls->lineEdit_radius->setVisible(false);
-    //     m_Controls->label_neighborhood->setVisible(false);
-    //     m_Controls->lineEdit_neighborhood->setVisible(false);
-    //     m_Controls->label_type->setVisible(false);
-    //     m_Controls->lineEdit_type->setVisible(false);
-    //     m_Controls->pushButton_reset->setVisible(false);
+        m_Controls->widget_latticeparamscontainer->setVisible(false);
+        // m_Controls->label_radius->setVisible(false);
+        // m_Controls->lineEdit_radius->setVisible(false);
+        // m_Controls->label_neighborhood->setVisible(false);
+        // m_Controls->lineEdit_neighborhood->setVisible(false);
+        // m_Controls->label_type->setVisible(false);
+        // m_Controls->lineEdit_type->setVisible(false);
+        // m_Controls->pushButton_default->setVisible(false);
     }
     else if (text == "Lattice")
     {
-    //     m_Controls->label_radius->setVisible(true);
-    //     m_Controls->lineEdit_radius->setVisible(true);
-    //     m_Controls->label_neighborhood->setVisible(true);
-    //     m_Controls->lineEdit_neighborhood->setVisible(true);
-    //     m_Controls->label_type->setVisible(true);
-    //     m_Controls->lineEdit_type->setVisible(true);
-    //     m_Controls->pushButton_reset->setVisible(true);
+        m_Controls->widget_latticeparamscontainer->setVisible(true);
+        // m_Controls->label_radius->setVisible(true);
+        // m_Controls->lineEdit_radius->setVisible(true);
+        // m_Controls->label_neighborhood->setVisible(true);
+        // m_Controls->lineEdit_neighborhood->setVisible(true);
+        // m_Controls->label_type->setVisible(true);
+        // m_Controls->lineEdit_type->setVisible(true);
+        // m_Controls->pushButton_default->setVisible(true);
     }
 }
 
-void QmitkRadiomicsStatisticCaPTkHeaderView::OnResetButtonPressed()
+void QmitkRadiomicsStatisticCaPTkHeaderView::OnDefaultButtonClicked()
 {
     this->ResetLatticeParameters();
 }
