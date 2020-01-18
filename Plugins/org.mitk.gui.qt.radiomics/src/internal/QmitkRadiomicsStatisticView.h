@@ -22,6 +22,8 @@ found in the LICENSE file.
 #include <mitkDataStorageSelection.h>
 #include <usAny.h>
 
+#include "QmitkRadiomicsStatisticCaPTkHeaderView.h"
+
 /*!
 \brief This module allows to use some basic image processing filters for preprocessing, image enhancement and testing purposes
 
@@ -89,6 +91,7 @@ private:
   */
   Ui::QmitkRadiomicsStatisticViewControls *m_Controls;
 
+  QmitkRadiomicsStatisticCaPTkHeaderView* m_QmitkRadiomicsStatisticCaPTkHeaderView;
 };
 
 #endif // !defined(QmitkRadiomicsStatistic_H__INCLUDED)

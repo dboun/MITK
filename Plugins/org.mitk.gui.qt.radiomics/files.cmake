@@ -4,6 +4,7 @@ set(SRC_CPP_FILES
 
 set(INTERNAL_CPP_FILES
   QmitkRadiomicsStatisticView.cpp
+  QmitkRadiomicsStatisticCaPTkHeaderView.cpp
   QmitkRadiomicsTransformationView.cpp
   QmitkRadiomicsArithmetricView.cpp
   QmitkRadiomicsMaskProcessingView.cpp
@@ -15,6 +16,7 @@ set(INTERNAL_CPP_FILES
 
 set(UI_FILES
   src/internal/QmitkRadiomicsStatisticViewControls.ui
+  src/internal/QmitkRadiomicsStatisticCaPTkHeaderViewControls.ui
   src/internal/QmitkRadiomicsTransformationViewControls.ui
   src/internal/QmitkRadiomicsArithmetricViewControls.ui
   src/internal/QmitkRadiomicsMaskProcessingViewControls.ui
@@ -22,6 +24,7 @@ set(UI_FILES
 
 set(MOC_H_FILES
   src/internal/QmitkRadiomicsStatisticView.h
+  src/internal/QmitkRadiomicsStatisticCaPTkHeaderView.h
   src/internal/QmitkRadiomicsTransformationView.h
   src/internal/QmitkRadiomicsArithmetricView.h
   src/internal/QmitkRadiomicsMaskProcessingView.h

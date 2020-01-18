@@ -69,7 +69,8 @@ found in the LICENSE file.
 
 QmitkRadiomicsStatistic::QmitkRadiomicsStatistic()
 : QmitkAbstractView(),
-  m_Controls(nullptr)
+  m_Controls(nullptr),
+  m_QmitkRadiomicsStatisticCaPTkHeaderView(new QmitkRadiomicsStatisticCaPTkHeaderView())
 {
 }
 
@@ -143,7 +144,9 @@ void QmitkRadiomicsStatistic::CreateQtPartControl(QWidget *parent)
     mitk::NodePredicateDimension::Pointer dimensionPredicate = mitk::NodePredicateDimension::New(3);
     mitk::NodePredicateDataType::Pointer imagePredicate = mitk::NodePredicateDataType::New("Image");
 
-
+    m_Controls->verticalLayout_2->insertWidget(
+      0, m_QmitkRadiomicsStatisticCaPTkHeaderView
+    );
   }
 }
 
