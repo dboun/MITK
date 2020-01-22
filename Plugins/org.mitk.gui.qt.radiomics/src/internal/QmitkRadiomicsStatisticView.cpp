@@ -264,20 +264,16 @@ void QmitkRadiomicsStatistic::executeButtonPressed()
   it = raw_mask_label_set_image->GetActiveLabelSet()->IteratorConstBegin(); // reinit iterator
   while (it != end)
   {
+    mitk::Label::PixelType currentLabelValue = it->second->GetValue();
+    if (currentLabelValue == 0) { it++; continue; }
+    std::string currentLabelText = it->second->GetName();
+
     // ---- Clone the original label set image
     mitk::LabelSetImage::Pointer raw_label_set_mask_of_label = 
       mitk::LabelSetImage::New();
     raw_label_set_mask_of_label->InitializeByLabeledImage(
       dynamic_cast<mitk::Image*>(raw_mask_label_set_image.GetPointer())
     );
-      // raw_mask_label_set_image->Clone();
-    // if (raw_label_set_mask_of_label->GetActiveLabelSet() == nullptr)
-    // {
-    //   std::cerr << "nope\n";
-    // }
-
-    mitk::Label::PixelType currentLabelValue = it->first;
-    std::string currentLabelText = it->second->GetName();
 
     // ---- Set the correct name to the current label
     raw_label_set_mask_of_label->GetActiveLabelSet()->GetLabel(
