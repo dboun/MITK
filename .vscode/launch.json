@@ -5,13 +5,13 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug g++",
+            "name": "g++ Debug",
             "type": "cppdbg",
             "request": "launch",
             "program": "/home/dimitris/Work/MITK-Nightly/MITK-superbuild/Debug/MITK-build/bin/MitkWorkbench",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
+            "cwd": "/home/dimitris/Work/MITK-Nightly/MITK-superbuild/Debug/MITK-build/bin",
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",

@@ -56,6 +56,8 @@ found in the LICENSE file.
 #include <mitkNodePredicateDimension.h>
 #include <mitkNodePredicateAnd.h>
 #include <mitkImageTimeSelector.h>
+#include <mitkLabelSetImage.h>
+#include <mitkLabelSetImageConverter.h>
 #include <mitkProperties.h>
 #include <mitkLevelWindowProperty.h>
 #include <mitkImageStatisticsHolder.h>
@@ -208,7 +210,8 @@ void QmitkRadiomicsStatistic::executeButtonPressed()
   mitk::BaseData* baseDataMaskImage = nullptr;
 
   mitk::Image::Pointer raw_image;
-  mitk::Image::Pointer mask_image;
+  mitk::LabelSetImage::Pointer raw_mask_label_set_image;
+  // mitk::Image::Pointer mask_image;
   QString imageName;
   QString maskName;
 
@@ -222,7 +225,8 @@ void QmitkRadiomicsStatistic::executeButtonPressed()
   if ((baseDataRawImage != nullptr) && (baseDataMaskImage != nullptr))
   {
     raw_image = dynamic_cast<mitk::Image *>(baseDataRawImage);
-    mask_image = dynamic_cast<mitk::Image *>(baseDataMaskImage);
+    // mask_image = dynamic_cast<mitk::Image *>(baseDataMaskImage);
+    raw_mask_label_set_image = dynamic_cast<mitk::LabelSetImage *>(baseDataMaskImage);
   }
   else {
     QMessageBox msgBox;
@@ -230,7 +234,7 @@ void QmitkRadiomicsStatistic::executeButtonPressed()
     msgBox.exec();
     return;
   }
-  if (raw_image.IsNull() || mask_image.IsNull())
+  if (raw_image.IsNull() || raw_mask_label_set_image.IsNull())
   {
     QMessageBox msgBox;
     msgBox.setText("Error during processing the specified images.");
@@ -238,16 +242,61 @@ void QmitkRadiomicsStatistic::executeButtonPressed()
     return;
   }
 
+  // mitk::AbstractGlobalImageFeature::FeatureListType is really
+  // typedef std::vector< std::pair<std::string, double> > FeatureListType;
   mitk::AbstractGlobalImageFeature::FeatureListType stats;
-  for (int i = 0; i < m_Controls->m_FeaturesGroup->layout()->count(); ++i)
-  {
-    auto parameter = this->GenerateParameters();
 
-    mitkUI::GIFConfigurationPanel* gifPanel = dynamic_cast<mitkUI::GIFConfigurationPanel*>(m_Controls->m_FeaturesGroup->layout()->itemAt(i)->widget());
-    if (gifPanel == nullptr)
-      continue;
-    gifPanel->CalculateFeaturesUsingParameters(raw_image, mask_image, parameter, stats);
+  mitk::LabelSet::LabelContainerConstIteratorType end = 
+    raw_mask_label_set_image->GetActiveLabelSet()->IteratorConstEnd();
+
+  // ---- Find all the different mask values
+  std::vector<mitk::Label::PixelType> labels;
+  mitk::LabelSet::LabelContainerConstIteratorType it  = 
+    raw_mask_label_set_image->GetActiveLabelSet()->IteratorConstBegin();
+  while(it != end)
+  {
+    labels.push_back(it->first);
+    it++;
   }
+
+  // ---- Iterate over the labels of the mask image
+  mitk::LabelSetImage::Pointer workingImage;
+  it = raw_mask_label_set_image->GetActiveLabelSet()->IteratorConstBegin(); // reinit iterator
+  while (it != end)
+  {
+    // ---- Clone the original label set image
+    mitk::LabelSetImage* const raw_label_set_mask_of_label = 
+      raw_mask_label_set_image->Clone();
+
+    // ---- Remove other labels, apart from the label of interest this loop
+    mitk::Label::PixelType currentLabelValue = it->first;
+    for (auto label : labels)
+    {
+      if (label != currentLabelValue)
+      {
+        raw_label_set_mask_of_label->GetActiveLabelSet()->RemoveLabel(label);
+      }
+    }
+
+    // ---- Cast to mitk::Image::Pointer (that's what FE needs)
+    mitk::Image::Pointer raw_mask_of_label = 
+      mitk::ConvertLabelSetImageToImage(raw_label_set_mask_of_label);
+
+    // ---- Calculate features
+    mitk::AbstractGlobalImageFeature::FeatureListType stats_new = 
+      this->CalculateFeatures(raw_image, raw_mask_of_label);
+
+    // ---- Append the label name to the 'first' field of each item
+    for (auto& stat_new : stats_new)
+    {
+      stats.push_back(stat_new);
+    }
+    
+    // ---- Increase iterator
+    it++;
+  }
+
+  // ---- Continue normally and add the features to the table
 
   m_Controls->m_ResultTable->setRowCount(stats.size());
 
@@ -326,4 +375,21 @@ void QmitkRadiomicsStatistic::OnSelectionChanged(berry::IWorkbenchPart::Pointer,
   {
 
   }
+}
+
+mitk::AbstractGlobalImageFeature::FeatureListType QmitkRadiomicsStatistic::CalculateFeatures(
+  mitk::Image::Pointer image, 
+  mitk::Image::Pointer mask)
+{
+  mitk::AbstractGlobalImageFeature::FeatureListType stats;
+  for (int i = 0; i < m_Controls->m_FeaturesGroup->layout()->count(); ++i)
+  {
+    auto parameter = this->GenerateParameters();
+
+    mitkUI::GIFConfigurationPanel* gifPanel = dynamic_cast<mitkUI::GIFConfigurationPanel*>(m_Controls->m_FeaturesGroup->layout()->itemAt(i)->widget());
+    if (gifPanel == nullptr)
+      continue;
+    gifPanel->CalculateFeaturesUsingParameters(image, mask, parameter, stats);
+  }
+  return stats;
 }

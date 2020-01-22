@@ -20,6 +20,7 @@ found in the LICENSE file.
 #include "QmitkStepperAdapter.h"
 
 #include <mitkDataStorageSelection.h>
+#include <mitkAbstractGlobalImageFeature.h>
 #include <usAny.h>
 
 #include "QmitkRadiomicsStatisticCaPTkHeaderView.h"
@@ -85,6 +86,11 @@ public:
 
 private:
   std::map < std::string, us::Any> GenerateParameters();
+
+  mitk::AbstractGlobalImageFeature::FeatureListType CalculateFeatures(
+    mitk::Image::Pointer image, 
+    mitk::Image::Pointer mask
+  );
 
   /*!
   * controls containing sliders for scrolling through the slices
