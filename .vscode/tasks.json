@@ -20,12 +20,10 @@
             "args": [],
             "options": {
                 "cwd": "/home/dimitris/Work/MITK-Nightly/MITK-superbuild/Debug/MITK-build"
-            }
-            //,
-            // "group": {
-            //     "kind": "build",
-            //     "isDefault": true
-            // }
+            },
+            "problemMatcher": [
+                "$gcc"
+            ]
         }
     ],
     "version": "2.0.0"

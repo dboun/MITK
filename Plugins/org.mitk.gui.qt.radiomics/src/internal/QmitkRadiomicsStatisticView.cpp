@@ -211,7 +211,7 @@ void QmitkRadiomicsStatistic::executeButtonPressed()
 
   mitk::Image::Pointer raw_image;
   mitk::LabelSetImage::Pointer raw_mask_label_set_image;
-  // mitk::Image::Pointer mask_image;
+  mitk::Image::Pointer mask_image;
   QString imageName;
   QString maskName;
 
@@ -225,7 +225,7 @@ void QmitkRadiomicsStatistic::executeButtonPressed()
   if ((baseDataRawImage != nullptr) && (baseDataMaskImage != nullptr))
   {
     raw_image = dynamic_cast<mitk::Image *>(baseDataRawImage);
-    // mask_image = dynamic_cast<mitk::Image *>(baseDataMaskImage);
+    mask_image = dynamic_cast<mitk::Image *>(baseDataMaskImage);
     raw_mask_label_set_image = dynamic_cast<mitk::LabelSetImage *>(baseDataMaskImage);
   }
   else {
@@ -265,22 +265,37 @@ void QmitkRadiomicsStatistic::executeButtonPressed()
   while (it != end)
   {
     // ---- Clone the original label set image
-    mitk::LabelSetImage* const raw_label_set_mask_of_label = 
-      raw_mask_label_set_image->Clone();
+    mitk::LabelSetImage::Pointer raw_label_set_mask_of_label = 
+      mitk::LabelSetImage::New();
+    raw_label_set_mask_of_label->InitializeByLabeledImage(
+      dynamic_cast<mitk::Image*>(raw_mask_label_set_image.GetPointer())
+    );
+      // raw_mask_label_set_image->Clone();
+    // if (raw_label_set_mask_of_label->GetActiveLabelSet() == nullptr)
+    // {
+    //   std::cerr << "nope\n";
+    // }
+
+    mitk::Label::PixelType currentLabelValue = it->first;
+    std::string currentLabelText = it->second->GetName();
+
+    // ---- Set the correct name to the current label
+    raw_label_set_mask_of_label->GetActiveLabelSet()->GetLabel(
+      currentLabelValue)->SetName(currentLabelText);
 
     // ---- Remove other labels, apart from the label of interest this loop
-    mitk::Label::PixelType currentLabelValue = it->first;
     for (auto label : labels)
     {
       if (label != currentLabelValue)
       {
         raw_label_set_mask_of_label->GetActiveLabelSet()->RemoveLabel(label);
       }
+      
     }
 
     // ---- Cast to mitk::Image::Pointer (that's what FE needs)
     mitk::Image::Pointer raw_mask_of_label = 
-      mitk::ConvertLabelSetImageToImage(raw_label_set_mask_of_label);
+      mitk::ConvertLabelSetImageToImage(raw_label_set_mask_of_label.GetPointer());
 
     // ---- Calculate features
     mitk::AbstractGlobalImageFeature::FeatureListType stats_new = 
