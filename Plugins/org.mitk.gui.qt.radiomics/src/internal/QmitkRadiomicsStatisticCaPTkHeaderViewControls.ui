@@ -68,29 +68,22 @@
             <number>0</number>
            </property>
            <item>
-            <widget class="QLineEdit" name="lineEdit_radius">
-             <property name="placeholderText">
-              <string>Radius</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLineEdit" name="lineEdit_neighborhood">
+            <widget class="QLineEdit" name="lineEdit_window">
              <property name="text">
               <string/>
              </property>
              <property name="placeholderText">
-              <string>Neighborhood</string>
+              <string>Window</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="lineEdit_type">
+            <widget class="QLineEdit" name="lineEdit_step">
              <property name="text">
               <string/>
              </property>
              <property name="placeholderText">
-              <string>Type</string>
+              <string>Step</string>
              </property>
             </widget>
            </item>

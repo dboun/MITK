@@ -69,6 +69,8 @@ found in the LICENSE file.
 // Specific GUI Includes
 #include "QmitkGIFConfigurationPanel.h"
 
+#include "CaPTkROIConstruction.h"
+
 QmitkRadiomicsStatistic::QmitkRadiomicsStatistic()
 : QmitkAbstractView(),
   m_Controls(nullptr),
@@ -243,72 +245,101 @@ void QmitkRadiomicsStatistic::executeButtonPressed()
     return;
   }
 
+  // ---- [[ CaPTk changes start here ]]
+
   // mitk::AbstractGlobalImageFeature::FeatureListType is really
   // typedef std::vector< std::pair<std::string, double> > FeatureListType;
   mitk::AbstractGlobalImageFeature::FeatureListType stats;
 
-  mitk::LabelSet::LabelContainerConstIteratorType end = 
-    raw_mask_label_set_image->GetActiveLabelSet()->IteratorConstEnd();
+  // mitk::LabelSet::LabelContainerConstIteratorType end = 
+  //   raw_mask_label_set_image->GetActiveLabelSet()->IteratorConstEnd();
 
-  // ---- Find all the different mask values
-  std::vector<mitk::Label::PixelType> labels;
-  mitk::LabelSet::LabelContainerConstIteratorType it  = 
-    raw_mask_label_set_image->GetActiveLabelSet()->IteratorConstBegin();
-  while(it != end)
+  // // ---- Find all the different mask values
+  // std::vector<mitk::Label::PixelType> labels;
+  // mitk::LabelSet::LabelContainerConstIteratorType it  = 
+  //   raw_mask_label_set_image->GetActiveLabelSet()->IteratorConstBegin();
+  // while(it != end)
+  // {
+  //   labels.push_back(it->first);
+  //   it++;
+  // }
+
+  // // ---- Iterate over the labels of the mask image
+  // mitk::LabelSetImage::Pointer workingImage;
+  // it = raw_mask_label_set_image->GetActiveLabelSet()->IteratorConstBegin(); // reinit iterator
+  // while (it != end)
+  // {
+  //   mitk::Label::PixelType currentLabelValue = it->second->GetValue();
+  //   if (currentLabelValue == 0) { it++; continue; }
+  //   std::string currentLabelText = it->second->GetName();
+
+  //   // ---- Clone the original label set image
+  //   mitk::LabelSetImage::Pointer raw_label_set_mask_of_label = 
+  //     mitk::LabelSetImage::New();
+  //   raw_label_set_mask_of_label->InitializeByLabeledImage(
+  //     dynamic_cast<mitk::Image*>(raw_mask_label_set_image.GetPointer())
+  //   );
+
+  //   // ---- Set the correct name to the current label
+  //   raw_label_set_mask_of_label->GetActiveLabelSet()->GetLabel(
+  //     currentLabelValue)->SetName(currentLabelText);
+
+  //   // ---- Remove other labels, apart from the label of interest this loop
+  //   for (auto label : labels)
+  //   {
+  //     if (label != currentLabelValue)
+  //     {
+  //       raw_label_set_mask_of_label->GetActiveLabelSet()->RemoveLabel(label);
+  //     }
+      
+  //   }
+
+  //   // ---- Cast to mitk::Image::Pointer (that's what FE needs)
+  //   mitk::Image::Pointer raw_mask_of_label = 
+  //     mitk::ConvertLabelSetImageToImage(raw_label_set_mask_of_label.GetPointer());
+
+  //   // ---- Calculate features
+  //   mitk::AbstractGlobalImageFeature::FeatureListType stats_new = 
+  //     this->CalculateFeatures(raw_image, raw_mask_of_label);
+
+  //   // ---- Append the label name to the 'first' field of each item
+  //   for (auto& stat_new : stats_new)
+  //   {
+  //     stats.push_back(stat_new);
+  //   }
+    
+  //   // ---- Increase iterator
+  //   it++;
+  // }
+
+  if (m_QmitkRadiomicsStatisticCaPTkHeaderView->GetMode() == "Lattice")
   {
-    labels.push_back(it->first);
-    it++;
-  }
-
-  // ---- Iterate over the labels of the mask image
-  mitk::LabelSetImage::Pointer workingImage;
-  it = raw_mask_label_set_image->GetActiveLabelSet()->IteratorConstBegin(); // reinit iterator
-  while (it != end)
-  {
-    mitk::Label::PixelType currentLabelValue = it->second->GetValue();
-    if (currentLabelValue == 0) { it++; continue; }
-    std::string currentLabelText = it->second->GetName();
-
-    // ---- Clone the original label set image
-    mitk::LabelSetImage::Pointer raw_label_set_mask_of_label = 
-      mitk::LabelSetImage::New();
-    raw_label_set_mask_of_label->InitializeByLabeledImage(
-      dynamic_cast<mitk::Image*>(raw_mask_label_set_image.GetPointer())
+    auto roiConstructor = captk::ROIConstruction();
+    roiConstructor.Update(
+          raw_mask_label_set_image,
+          (m_QmitkRadiomicsStatisticCaPTkHeaderView->GetMode() == "Lattice"), // bool  lattice,
+          m_QmitkRadiomicsStatisticCaPTkHeaderView->GetLatticeWindow(),
+          false, // bool  fluxNeumannCondition,
+          false, //bool  patchConstructionROI,
+          false, //bool  patchConstructionNone,
+          m_QmitkRadiomicsStatisticCaPTkHeaderView->GetLatticeStep()
     );
 
-    // ---- Set the correct name to the current label
-    raw_label_set_mask_of_label->GetActiveLabelSet()->GetLabel(
-      currentLabelValue)->SetName(currentLabelText);
-
-    // ---- Remove other labels, apart from the label of interest this loop
-    for (auto label : labels)
+    while (roiConstructor.HasNext())
     {
-      if (label != currentLabelValue)
-      {
-        raw_label_set_mask_of_label->GetActiveLabelSet()->RemoveLabel(label);
-      }
-      
+      auto miniMask = roiConstructor.GetNext();
     }
-
-    // ---- Cast to mitk::Image::Pointer (that's what FE needs)
-    mitk::Image::Pointer raw_mask_of_label = 
-      mitk::ConvertLabelSetImageToImage(raw_label_set_mask_of_label.GetPointer());
-
-    // ---- Calculate features
-    mitk::AbstractGlobalImageFeature::FeatureListType stats_new = 
-      this->CalculateFeatures(raw_image, raw_mask_of_label);
-
-    // ---- Append the label name to the 'first' field of each item
-    for (auto& stat_new : stats_new)
-    {
-      stats.push_back(stat_new);
-    }
-    
-    // ---- Increase iterator
-    it++;
   }
+  else
+  {
+    this->CalculateFeatures(
+      raw_image, 
+      mitk::ConvertLabelSetImageToImage(raw_mask_label_set_image.GetPointer())
+    );
+  }
+  
 
-  // ---- Continue normally and add the features to the table
+  // ---- Continue normally (non-CaPTk) and add the features to the table
 
   m_Controls->m_ResultTable->setRowCount(stats.size());
 
@@ -398,9 +429,13 @@ mitk::AbstractGlobalImageFeature::FeatureListType QmitkRadiomicsStatistic::Calcu
   {
     auto parameter = this->GenerateParameters();
 
-    mitkUI::GIFConfigurationPanel* gifPanel = dynamic_cast<mitkUI::GIFConfigurationPanel*>(m_Controls->m_FeaturesGroup->layout()->itemAt(i)->widget());
+    mitkUI::GIFConfigurationPanel* gifPanel = dynamic_cast<mitkUI::GIFConfigurationPanel*>(
+      m_Controls->m_FeaturesGroup->layout()->itemAt(i)->widget()
+    );
     if (gifPanel == nullptr)
+    {
       continue;
+    }
     gifPanel->CalculateFeaturesUsingParameters(image, mask, parameter, stats);
   }
   return stats;

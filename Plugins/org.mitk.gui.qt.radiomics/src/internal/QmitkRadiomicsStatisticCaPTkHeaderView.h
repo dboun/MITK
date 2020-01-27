@@ -39,9 +39,8 @@ public:
 
   QString GetMode();
 
-  int GetLatticeRadius();
-  int GetLatticeNeighborhood();
-  int GetLatticeType();
+  int GetLatticeWindow();
+  int GetLatticeStep();
 
 protected slots:
 

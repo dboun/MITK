@@ -15,9 +15,9 @@ QmitkRadiomicsStatisticCaPTkHeaderView::QmitkRadiomicsStatisticCaPTkHeaderView(
     
     m_Controls->comboBox_mode->addItems(QStringList() << "Normal" << "Lattice");
 
-    // Default values
-    // TODO: Limit them
-    // TODO: Make them accept only numbers
+    m_Controls->lineEdit_window->setValidator( new QDoubleValidator(0, 100000, 3, this) );
+    m_Controls->lineEdit_step->setValidator( new QDoubleValidator(0, 100000, 3, this) );
+
     // this->ResetLatticeParameters();
     this->OnModeComboBoxCurrentTextChanged("Normal");
 
@@ -45,14 +45,14 @@ int QmitkRadiomicsStatisticCaPTkHeaderView::GetLatticeRadius()
     return m_Controls->lineEdit_radius->text().toInt();
 }
 
-int QmitkRadiomicsStatisticCaPTkHeaderView::GetLatticeNeighborhood()
+int QmitkRadiomicsStatisticCaPTkHeaderView::GetLatticeWindow()
 {
-    return m_Controls->lineEdit_neighborhood->text().toInt();
+    return m_Controls->lineEdit_window->text().toInt();
 }
 
-int QmitkRadiomicsStatisticCaPTkHeaderView::GetLatticeType()
+int QmitkRadiomicsStatisticCaPTkHeaderView::GetLatticeStep()
 {
-    return m_Controls->lineEdit_type->text().toInt();
+    return m_Controls->lineEdit_step->text().toInt();
 }
 
 void QmitkRadiomicsStatisticCaPTkHeaderView::OnModeComboBoxCurrentTextChanged(
@@ -61,24 +61,10 @@ void QmitkRadiomicsStatisticCaPTkHeaderView::OnModeComboBoxCurrentTextChanged(
     if (text == "Normal")
     {
         m_Controls->widget_latticeparamscontainer->setVisible(false);
-        // m_Controls->label_radius->setVisible(false);
-        // m_Controls->lineEdit_radius->setVisible(false);
-        // m_Controls->label_neighborhood->setVisible(false);
-        // m_Controls->lineEdit_neighborhood->setVisible(false);
-        // m_Controls->label_type->setVisible(false);
-        // m_Controls->lineEdit_type->setVisible(false);
-        // m_Controls->pushButton_default->setVisible(false);
     }
     else if (text == "Lattice")
     {
         m_Controls->widget_latticeparamscontainer->setVisible(true);
-        // m_Controls->label_radius->setVisible(true);
-        // m_Controls->lineEdit_radius->setVisible(true);
-        // m_Controls->label_neighborhood->setVisible(true);
-        // m_Controls->lineEdit_neighborhood->setVisible(true);
-        // m_Controls->label_type->setVisible(true);
-        // m_Controls->lineEdit_type->setVisible(true);
-        // m_Controls->pushButton_default->setVisible(true);
     }
 }
 
@@ -89,7 +75,6 @@ void QmitkRadiomicsStatisticCaPTkHeaderView::OnDefaultButtonClicked()
 
 void QmitkRadiomicsStatisticCaPTkHeaderView::ResetLatticeParameters()
 {
-    m_Controls->lineEdit_radius->setText("1");
-    m_Controls->lineEdit_neighborhood->setText("27");
-    m_Controls->lineEdit_type->setText("2");
+    m_Controls->lineEdit_window->setText("6.3");
+    m_Controls->lineEdit_step->setText("6.3");
 }

@@ -87,6 +87,12 @@ public:
 private:
   std::map < std::string, us::Any> GenerateParameters();
 
+  /** \brief CaPTk unified method for feature extraction
+   * 
+   * \param image the target image
+   * \param mask defines area on which the features will be extracted
+   * \return excel-like structure with the features
+   */
   mitk::AbstractGlobalImageFeature::FeatureListType CalculateFeatures(
     mitk::Image::Pointer image, 
     mitk::Image::Pointer mask
