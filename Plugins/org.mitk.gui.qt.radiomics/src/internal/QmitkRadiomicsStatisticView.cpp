@@ -275,7 +275,7 @@ void QmitkRadiomicsStatistic::executeButtonPressed()
       mitk::LabelSetImage::Pointer rMask = mitk::LabelSetImage::New();
 
       // Each time rMask gets populated with one patch (containing one label)
-      /*float weight = */constructor.PopulateMask(rMask);
+      float weight = constructor.PopulateMask(rMask);
 
       // Get the info of this mask and create the output path
       // auto name = rMask->GetActiveLabelSet()->GetActiveLabel()->GetName();
@@ -293,7 +293,7 @@ void QmitkRadiomicsStatistic::executeButtonPressed()
       {
         statMaskNames << maskName 
                        + QString("_")
-                       + QString::number(rMask->GetActiveLabel()->GetValue()) 
+                       + QString::number(weight) 
                        + QString("_")
                        + QString(rMask->GetActiveLabel()->GetName().c_str());
       }      
