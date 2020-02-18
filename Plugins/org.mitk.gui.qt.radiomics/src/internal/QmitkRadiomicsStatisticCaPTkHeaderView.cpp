@@ -15,8 +15,8 @@ QmitkRadiomicsStatisticCaPTkHeaderView::QmitkRadiomicsStatisticCaPTkHeaderView(
     
     m_Controls->comboBox_mode->addItems(QStringList() << "Normal" << "Lattice");
 
-    m_Controls->lineEdit_window->setValidator( new QDoubleValidator(0, 100000, 3, this) );
-    m_Controls->lineEdit_step->setValidator( new QDoubleValidator(0, 100000, 3, this) );
+    m_Controls->lineEdit_radius->setValidator( new QDoubleValidator(0, 10000, 4, this) );
+    m_Controls->lineEdit_step->setValidator( new QDoubleValidator(0, 10000, 4, this) );
 
     // this->ResetLatticeParameters();
     this->OnModeComboBoxCurrentTextChanged("Normal");
@@ -40,19 +40,14 @@ QString QmitkRadiomicsStatisticCaPTkHeaderView::GetMode()
     return m_Controls->comboBox_mode->currentText();
 }
 
-int QmitkRadiomicsStatisticCaPTkHeaderView::GetLatticeRadius()
+float QmitkRadiomicsStatisticCaPTkHeaderView::GetLatticeRadius()
 {
-    return m_Controls->lineEdit_radius->text().toInt();
+    return m_Controls->lineEdit_radius->text().toFloat();
 }
 
-int QmitkRadiomicsStatisticCaPTkHeaderView::GetLatticeWindow()
+float QmitkRadiomicsStatisticCaPTkHeaderView::GetLatticeStep()
 {
-    return m_Controls->lineEdit_window->text().toInt();
-}
-
-int QmitkRadiomicsStatisticCaPTkHeaderView::GetLatticeStep()
-{
-    return m_Controls->lineEdit_step->text().toInt();
+    return m_Controls->lineEdit_step->text().toFloat();
 }
 
 void QmitkRadiomicsStatisticCaPTkHeaderView::OnModeComboBoxCurrentTextChanged(
@@ -75,6 +70,6 @@ void QmitkRadiomicsStatisticCaPTkHeaderView::OnDefaultButtonClicked()
 
 void QmitkRadiomicsStatisticCaPTkHeaderView::ResetLatticeParameters()
 {
-    m_Controls->lineEdit_window->setText("6.3");
-    m_Controls->lineEdit_step->setText("6.3");
+    m_Controls->lineEdit_radius->setText("2.0");
+    m_Controls->lineEdit_step->setText("6.0");
 }

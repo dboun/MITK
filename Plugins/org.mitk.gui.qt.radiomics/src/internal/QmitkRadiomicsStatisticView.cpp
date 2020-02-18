@@ -69,7 +69,9 @@ found in the LICENSE file.
 // Specific GUI Includes
 #include "QmitkGIFConfigurationPanel.h"
 
+// CaPTk includes
 #include "CaPTkROIConstruction.h"
+#include <mitkLogMacros.h>
 
 QmitkRadiomicsStatistic::QmitkRadiomicsStatistic()
 : QmitkAbstractView(),
@@ -207,6 +209,8 @@ std::map < std::string, us::Any> QmitkRadiomicsStatistic::GenerateParameters()
 
 void QmitkRadiomicsStatistic::executeButtonPressed()
 {
+  // ---- [[ CaPTk changes start here ]]
+
   QmitkDataStorageComboBox * cb_image = dynamic_cast<QmitkDataStorageComboBox *>(m_Controls->m_InputImageGroup->layout()->itemAt(1)->widget());
   QmitkDataStorageComboBox * cb_maskimage = dynamic_cast<QmitkDataStorageComboBox *>(m_Controls->m_InputImageGroup->layout()->itemAt(3)->widget());
   mitk::BaseData* baseDataRawImage = nullptr;
@@ -245,97 +249,68 @@ void QmitkRadiomicsStatistic::executeButtonPressed()
     return;
   }
 
-  // ---- [[ CaPTk changes start here ]]
-
-  // mitk::AbstractGlobalImageFeature::FeatureListType is really
+  // The type is really:
   // typedef std::vector< std::pair<std::string, double> > FeatureListType;
   mitk::AbstractGlobalImageFeature::FeatureListType stats;
 
-  // mitk::LabelSet::LabelContainerConstIteratorType end = 
-  //   raw_mask_label_set_image->GetActiveLabelSet()->IteratorConstEnd();
-
-  // // ---- Find all the different mask values
-  // std::vector<mitk::Label::PixelType> labels;
-  // mitk::LabelSet::LabelContainerConstIteratorType it  = 
-  //   raw_mask_label_set_image->GetActiveLabelSet()->IteratorConstBegin();
-  // while(it != end)
-  // {
-  //   labels.push_back(it->first);
-  //   it++;
-  // }
-
-  // // ---- Iterate over the labels of the mask image
-  // mitk::LabelSetImage::Pointer workingImage;
-  // it = raw_mask_label_set_image->GetActiveLabelSet()->IteratorConstBegin(); // reinit iterator
-  // while (it != end)
-  // {
-  //   mitk::Label::PixelType currentLabelValue = it->second->GetValue();
-  //   if (currentLabelValue == 0) { it++; continue; }
-  //   std::string currentLabelText = it->second->GetName();
-
-  //   // ---- Clone the original label set image
-  //   mitk::LabelSetImage::Pointer raw_label_set_mask_of_label = 
-  //     mitk::LabelSetImage::New();
-  //   raw_label_set_mask_of_label->InitializeByLabeledImage(
-  //     dynamic_cast<mitk::Image*>(raw_mask_label_set_image.GetPointer())
-  //   );
-
-  //   // ---- Set the correct name to the current label
-  //   raw_label_set_mask_of_label->GetActiveLabelSet()->GetLabel(
-  //     currentLabelValue)->SetName(currentLabelText);
-
-  //   // ---- Remove other labels, apart from the label of interest this loop
-  //   for (auto label : labels)
-  //   {
-  //     if (label != currentLabelValue)
-  //     {
-  //       raw_label_set_mask_of_label->GetActiveLabelSet()->RemoveLabel(label);
-  //     }
-      
-  //   }
-
-  //   // ---- Cast to mitk::Image::Pointer (that's what FE needs)
-  //   mitk::Image::Pointer raw_mask_of_label = 
-  //     mitk::ConvertLabelSetImageToImage(raw_label_set_mask_of_label.GetPointer());
-
-  //   // ---- Calculate features
-  //   mitk::AbstractGlobalImageFeature::FeatureListType stats_new = 
-  //     this->CalculateFeatures(raw_image, raw_mask_of_label);
-
-  //   // ---- Append the label name to the 'first' field of each item
-  //   for (auto& stat_new : stats_new)
-  //   {
-  //     stats.push_back(stat_new);
-  //   }
-    
-  //   // ---- Increase iterator
-  //   it++;
-  // }
+  QStringList statMaskNames;
 
   if (m_QmitkRadiomicsStatisticCaPTkHeaderView->GetMode() == "Lattice")
   {
-    auto roiConstructor = captk::ROIConstruction();
-    roiConstructor.Update(
-          raw_mask_label_set_image,
-          (m_QmitkRadiomicsStatisticCaPTkHeaderView->GetMode() == "Lattice"), // bool  lattice,
-          m_QmitkRadiomicsStatisticCaPTkHeaderView->GetLatticeWindow(),
-          false, // bool  fluxNeumannCondition,
-          false, //bool  patchConstructionROI,
-          false, //bool  patchConstructionNone,
-          m_QmitkRadiomicsStatisticCaPTkHeaderView->GetLatticeStep()
+    auto radius = m_QmitkRadiomicsStatisticCaPTkHeaderView->GetLatticeRadius();
+    auto step = m_QmitkRadiomicsStatisticCaPTkHeaderView->GetLatticeStep();
+
+    captk::ROIConstruction constructor;
+    
+    MITK_INFO << "Updating ROI Constructor";
+    constructor.Update(
+      raw_mask_label_set_image,
+      radius,
+      step
     );
 
-    while (roiConstructor.HasNext())
+    for (constructor.GoToBegin(); !constructor.IsAtEnd(); constructor++)
     {
-      auto miniMask = roiConstructor.GetNext();
+      // Create patch mask (patch is the area around the lattice)
+      mitk::LabelSetImage::Pointer rMask = mitk::LabelSetImage::New();
+
+      // Each time rMask gets populated with one patch (containing one label)
+      /*float weight = */constructor.PopulateMask(rMask);
+
+      // Get the info of this mask and create the output path
+      // auto name = rMask->GetActiveLabelSet()->GetActiveLabel()->GetName();
+      // auto value = rMask->GetActiveLabelSet()->GetActiveLabel()->GetValue();
+
+      auto features = this->CalculateFeatures(
+        raw_image, 
+        mitk::ConvertLabelSetImageToImage(rMask.GetPointer())
+      );
+
+      // append to collective one
+      stats.insert(stats.end(), features.begin(), features.end());
+
+      for (size_t i = 0; i < features.size(); i++)
+      {
+        statMaskNames << maskName 
+                       + QString("_")
+                       + QString::number(rMask->GetActiveLabel()->GetValue()) 
+                       + QString("_")
+                       + QString(rMask->GetActiveLabel()->GetName().c_str());
+      }      
     }
   }
   else
   {
-    this->CalculateFeatures(
+    auto features = this->CalculateFeatures(
       raw_image, 
       mitk::ConvertLabelSetImageToImage(raw_mask_label_set_image.GetPointer())
     );
+    stats.insert(stats.end(), features.begin(), features.end());
+
+    for (size_t i = 0; i < features.size(); i++)
+    {
+      statMaskNames << maskName;
+    }
   }
   
 
@@ -346,7 +321,7 @@ void QmitkRadiomicsStatistic::executeButtonPressed()
   for (std::size_t i = 0; i < stats.size(); ++i)
   {
     m_Controls->m_ResultTable->setItem(i, 0, new QTableWidgetItem(imageName));
-    m_Controls->m_ResultTable->setItem(i, 1, new QTableWidgetItem(maskName));
+    m_Controls->m_ResultTable->setItem(i, 1, new QTableWidgetItem(statMaskNames[i].toStdString().c_str()));
     m_Controls->m_ResultTable->setItem(i, 2, new QTableWidgetItem(stats[i].first.c_str()));
     m_Controls->m_ResultTable->setItem(i, 3, new QTableWidgetItem(QString::number(stats[i].second)));
   }
@@ -420,10 +395,12 @@ void QmitkRadiomicsStatistic::OnSelectionChanged(berry::IWorkbenchPart::Pointer,
   }
 }
 
-mitk::AbstractGlobalImageFeature::FeatureListType QmitkRadiomicsStatistic::CalculateFeatures(
+mitk::AbstractGlobalImageFeature::FeatureListType 
+QmitkRadiomicsStatistic::CalculateFeatures(
   mitk::Image::Pointer image, 
   mitk::Image::Pointer mask)
 {
+  MITK_INFO << "QmitkRadiomicsStatistic::CalculateFeatures";
   mitk::AbstractGlobalImageFeature::FeatureListType stats;
   for (int i = 0; i < m_Controls->m_FeaturesGroup->layout()->count(); ++i)
   {
